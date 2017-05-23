@@ -1,4 +1,4 @@
-html, body, article, h1, h2, h3, h4, h5, h6, p {
+html, body, article, header, nav, h1, h2, h3, h4, h5, h6, p {
 	margin: 0 auto;
 	padding: 0;
 	border: 0;
@@ -31,6 +31,7 @@ body {
 
 header {
 	text-align: center;
+	margin-top: 1em;
 	margin-bottom: 2.4em;
 }
 
@@ -38,7 +39,6 @@ h1 {
 	font-size: 2.6em;
 	font-weight: normal;
 	color: #39f;
-	margin-top: 1em;
 }
 
 h2 {
@@ -57,7 +57,12 @@ a {
 ul, ol {
 	margin: .6em 0;
 	padding: 0;
-	list-style-position: inside;
+	padding-left: 1.5em;
+	list-style-position: outside;
+}
+
+ul {
+	list-style-type: square;
 }
 
 article {
@@ -82,5 +87,9 @@ article img {
 }
 
 nav {
-	display: none;
+	margin-bottom: 1em;
+}
+
+nav a {
+	font-weight: normal;
 }
