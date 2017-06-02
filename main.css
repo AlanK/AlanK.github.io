@@ -93,3 +93,7 @@ nav {
 nav a {
 	font-weight: normal;
 }
+
+.context {
+	color: #999;
+}
