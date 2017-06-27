@@ -1,4 +1,4 @@
-html, body, article, header, nav, h1, h2, h3, h4, h5, h6, p {
+html, body, article, header, nav, h1, h2, h3, h4, h5, h6, p, ul, ol, img {
 	margin: 0 auto;
 	padding: 0;
 	border: 0;
@@ -8,16 +8,16 @@ html, body, article, header, nav, h1, h2, h3, h4, h5, h6, p {
 	max-width: 40em;
 }
 
-article, header, nav {
+article, header, nav, img {
 	display: block;
 }
 
-img {
-	max-width: 100%;
+html, body {
+	max-width: none;
 }
 
 html {
-	font-size:  110%;
+	font-size:  1.1em;
 	-webkit-text-size-adjust: 100%;
 	overflow-y: scroll;
 	font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Roboto, Arial, sans-serif;
@@ -36,9 +36,10 @@ header {
 }
 
 h1 {
-	font-size: 2.6em;
+	font-size: 2.5em;
 	font-weight: normal;
 	color: #39f;
+	max-width: 16em;
 }
 
 h2 {
@@ -48,8 +49,10 @@ h2 {
 	color: #666;
 }
 
-p+p {
-	margin-top: 1em;
+img {
+	width: 100%;
+	height: auto;
+	margin: 1em auto;
 }
 
 a {
@@ -59,10 +62,10 @@ a {
 }
 
 ul, ol {
-	margin: .6em 0;
-	padding: 0;
+	margin: .6em auto;
 	padding-left: 1.5em;
 	list-style-position: outside;
+	max-width: 38.5em;
 }
 
 ul {
@@ -85,17 +88,16 @@ article h3 {
 	text-shadow: 0 .1em 0 black;
 }
 
-article img {
-	height: auto;
-	width: 100%;
-}
-
 nav {
 	margin-bottom: 1em;
 }
 
 nav a {
 	font-weight: normal;
+}
+
+p+p {
+	margin-top: 1em;
 }
 
 .context {
