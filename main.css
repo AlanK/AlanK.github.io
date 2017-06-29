@@ -20,7 +20,7 @@ html {
 	font-size:  1.1em;
 	-webkit-text-size-adjust: 100%;
 	overflow-y: scroll;
-	font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Roboto, Arial, sans-serif;
+	font-family: system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Roboto, Arial, sans-serif;
 }
 
 body {
