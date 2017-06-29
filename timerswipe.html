@@ -11,16 +11,18 @@
 </nav>
 <main role="main">
 <h1>TimerSwipe</h1>
-<img src="images/TimerSwipe_Hero_Wide.jpg" alt="TimerSwipe running on an iPhone." />
+<img src="images/TimerSwipe_Hero_Wide.jpg" class="hero" alt="TimerSwipe running on an iPhone." />
 <h2>Summary</h2>
 <p>TimerSwipe is an iOS timer operated by swipe gestures in any direction on any part of the screen. You can <a href="http://appstore.com/timerswipe">download TimerSwipe from the App Store</a> today.</p>
-<h2>Features &amp; Benefits</h2>
+<h2>Features</h2>
 <ul>
 <li>Start timers easily regardless of awkward physical access or obscured sightlines to your device, as when exercising or stretching</li>
 <li>Save timers for future use</li>
 <li>Automatically opens to a favorite timer</li>
 <li>Full VoiceOver support</li>
 </ul>
+<h2>Interesting Bits</h2>
+<p>As an exercise in idiomatic Swift, I wanted to convert my <code>Stopwatch</code> class (a wrapper for the <code>Timer</code> class in Foundation) into a value type. <a href="<code>Stopwatch</code>" title="See this code on Github"><code>Stopwatch</code> is now an immutable struct that communicates with its parent view controller via a simple protocol.</a></p>
 <h2>Code</h2>
 <p><a href="https://github.com/AlanK/TimerSwipe">github.com/AlanK/TimerSwipe</a></p>
 </main>

@@ -49,10 +49,14 @@ h2 {
 	color: #666;
 }
 
-img {
+img.hero {
 	width: 100%;
 	height: auto;
 	margin: 1em auto;
+}
+
+img.screenshot.light {
+	box-shadow: 0em 0.15em 0.25em #ccc
 }
 
 a {
@@ -98,6 +102,11 @@ nav a {
 
 p+p {
 	margin-top: 1em;
+}
+
+code {
+	font-family: Consolas, Inconsolata, san-serif;
+	line-height: 0.9em;
 }
 
 .context {
