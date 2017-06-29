@@ -105,7 +105,7 @@ p+p {
 }
 
 code {
-	font-family: Consolas, Inconsolata, san-serif;
+	font-family: Consolas, Inconsolata, Menlo, monospace;
 	line-height: 0.9em;
 }
 
