@@ -47,6 +47,7 @@ h2 {
 	margin-top: 1.2em;
 	margin-bottom: .6em;
 	color: #666;
+	clear: both;
 }
 
 img.hero {
@@ -74,6 +75,33 @@ ul, ol {
 
 ul {
 	list-style-type: square;
+}
+
+ul.screenshots {
+	display: block;
+	margin: 0 auto;
+	padding: 0;
+	list-style-type: none;
+	max-width: 40em;
+}
+
+ul.screenshots li {
+	display: block;
+	width: 31%;
+	margin: 0.6em 0 1.2em;
+	padding: 0;
+	float: left;
+}
+
+ul.screenshots li+li {
+	margin-left: 3.5%;
+}
+
+ul.screenshots img {
+	display: block;
+	margin: 0;
+	width: 100%;
+	height: auto;
 }
 
 article {
