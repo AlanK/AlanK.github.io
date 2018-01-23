@@ -35,6 +35,10 @@ header {
 	margin-bottom: 2.4em;
 }
 
+header h1 {
+	margin-bottom: 0.15em;
+}
+
 header img {
 	width: 11em;
 	height: 11em;
