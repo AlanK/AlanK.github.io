@@ -29,7 +29,7 @@
 <li>Full VoiceOver support</li>
 </ul>
 <h2>Interesting Bits</h2>
-<p>I recently implemented <a href="https://github.com/AlanK/TimerSwipe/blob/master/TimerSwipe/PermissionController.swift" title="See this code on GitHub"><code>PermissionController</code></a>, a view controller subclass that appears on first run, informs the user about local notifications, and requests permission to display them. This was a good opportunity to use two design patterns central to Cocoa Touch: dependency injection and delegation. I gave <code>PermissionController</code> a type method, <code>instantiate(with:)</code>, that acts as a factory to produce a <code>PermissionController</code> with the provided delegate pre-injected.</p>
+<p>I recently implemented <a href="https://github.com/AlanK/TimerSwipe/blob/master/TimerSwipe/PermissionController.swift" title="See this code on GitHub"><code>PermissionController</code></a>, a view controller subclass that appears on first run, informs the user about local notifications, and requests permission to display them. This was a good opportunity to use two design patterns central to Cocoa Touch: dependency injection and delegation. I gave <code>PermissionController</code> a type method, <code>instantiate(with:)</code>, that returns a <code>PermissionController</code> with the provided delegate pre-injected.</p>
 <p>The instance thus created contains very little custom code. All the “work” it does is directly related to controlling its view and subviews. Any user interaction it might receive is the responsibility of the <code>PermissionControllerDelegate</code>.</p>
 <h2>Code</h2>
 <p><a href="https://github.com/AlanK/TimerSwipe">github.com/AlanK/TimerSwipe</a></p>
