@@ -14,7 +14,7 @@
 <h1>TimerSwipe</h1>
 <img src="images/TimerSwipe_Hero_Wide.jpg" class="hero" alt="TimerSwipe running on an iPhone." width="2000" height="1125" />
 <h2>Summary</h2>
-<p>TimerSwipe is an iOS timer operated by swipe gestures in any direction on any part of the screen. You can <a href="http://appstore.com/timerswipe">download TimerSwipe from the App Store</a> today.</p>
+<p>TimerSwipe is an iOS timer I designed and developed for use when the device screen is not visible. You can <a href="http://appstore.com/timerswipe">download TimerSwipe from the App Store</a> today.</p>
 <h2>Screenshots</h2>
 <ul class="screenshots">
 <li><img src="images/TimerSwipe_Screen_01.png" class="screenshot light" alt="A list of timers in TimerSwipe" width="1242" height="2208" /></li>
@@ -29,8 +29,8 @@
 <li>Full VoiceOver support</li>
 </ul>
 <h2>Interesting Bits</h2>
-<p>I recently implemented <a href="https://github.com/AlanK/TimerSwipe/blob/master/TimerSwipe/PermissionController.swift" title="See this code on GitHub"><code>PermissionController</code></a>, a view controller subclass that appears on first run, informs the user about local notifications, and requests permission to display them. This was a good opportunity to use two design patterns central to Cocoa Touch: dependency injection and delegation. I gave <code>PermissionController</code> a type method, <code>instantiate(with:)</code>, that returns a <code>PermissionController</code> with the provided delegate pre-injected.</p>
-<p>The instance thus created contains very little custom code. All the “work” it does is directly related to controlling its view and subviews. Any user interaction it might receive is the responsibility of the <code>PermissionControllerDelegate</code>.</p>
+<p><a href="https://github.com/AlanK/TimerSwipe/blob/master/TimerSwipe/PermissionController.swift" title="See this code on GitHub"><code>PermissionController</code></a> is a view controller subclass that appears on first run, informs the user about local notifications, and requests permission to display them. I built it using two design patterns central to Cocoa Touch: dependency injection and delegation. I gave <code>PermissionController</code> a type method, <code>instantiate(with:)</code>, that returns a <code>PermissionController</code> with the provided delegate pre-injected.</p>
+<p>The instance thus created contains very little custom code. All the “work” it does is directly related to controlling its view and subviews. Handling user interaction is delegated to the <code>PermissionControllerDelegate</code>.</p>
 <h2>Code</h2>
 <p><a href="https://github.com/AlanK/TimerSwipe">github.com/AlanK/TimerSwipe</a></p>
 </main>
