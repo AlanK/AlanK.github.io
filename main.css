@@ -1,4 +1,4 @@
-html, body, article, header, nav, h1, h2, h3, h4, h5, h6, p, ul, ol, img {
+html, body, article, header, nav, h1, h2, h3, h4, h5, h6, p, ul, ol, img, pre {
 	margin: 0 auto;
 	padding: 0;
 	border: 0;
@@ -143,6 +143,10 @@ nav a {
 
 p+p {
 	margin-top: 1em;
+}
+
+pre {
+    overflow: auto;
 }
 
 code {
