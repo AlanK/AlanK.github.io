@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="initial-scale=1.0">
+<title>Alan Kantz-Durand’s Portfolio—Advanced Codable</title>
+<link rel="stylesheet" href="main.css" type="text/css" />
+</head>
+<body>
+<nav role="navigation">
+<a href="index.html">← Alan’s Portfolio</a>
+</nav>
+<main role="main">
+<h1>Advanced Codable</h1>
+<h2>Introduction</h2>
+<p>Over the course of this post, I will present a set of techniques for making use of the Decodable and Encodable protocols I call Advanced Codable. At the core of these techniques are two protocols, Advanced Decodable and Advanced Encodable, which I believe are novel contributions to the community. Using Advanced Codable, the major pitfalls of Codable can be avoided, especially pervasive optionality and manual implementations.</p>
+<p>The contents of this post are primarily my own work, along with tricks that are commonplace in the world of Swift development. However, special thanks goes to <a href="https://github.com/devandsev">@devandsev</a>, who was essential in developing these ideas from rough sketches to working code.</p>
+<h2>Codable basics</h2>
+<p>Codable is the part of the Swift programming language that makes it easy to translate common data formats to and from Swift types. It can be fun to use. For example, if you have a JSON object and a Swift type with the same structure, you simply declare the type Codable and the rest is taken care of:</p>
+<pre><code>// JSON object
+{
+  "isActive": true,
+  "name": "left",
+  "size": 5
+}
+
+// Codable declaration
+struct Value: Codable {
+  // Property names and types match
+  let isActive: Bool
+  let name: String
+  let size: Int
+}
+
+// Elsewhere, at a call site
+let value = try JSONDecoder().decode(Value.self, from: data)</code></pre>
+<p>Codable can also help if there is a mismatch between the names used in the data format and the names in your Swift type. You get to keep the declarative style of the previous case. For example, you can adapt the previously shown type to handle the differently-named keys in this JSON object:</p>
+<pre><code>// JSON object
+{
+  "active": true,
+  "name": "left",
+  "sizeNumber": 5
+}
+
+struct Value: Codable {
+  // Property names and types don’t match
+  let isActive: Bool
+  let name: String
+  let size: Int
+  
+  // `CodingKey` declaration
+  enum CodingKeys: String, CodingKey {
+    // Property name mapping
+    case isActive = "active"
+    case name
+    case size = "sizeNumber"
+  }
+}</code></pre>
+<h2>Falling off the Codable cliff</h2>
+<p>If you need to translate between data and Swift types that have different structures, though, you fall out of the land of declaration and into the land of procedural complexity. For example, suppose your JSON has height and width properties, where height and width are present or absent together. You want to translate this into a Swift type with a more concise size property. Take a deep breath:</p>
+<pre><code>// JSON object
+{
+  "name": "right",
+  "height": 2.3,
+  "width": 3.5
+}
+
+// Dissimilar Swift type
+struct Value: Codable {
+  let name: String
+  let size: CGSize?
+  
+  enum CodingKeys: String, CodingKey {
+    // Property names
+    case name
+    case height
+    case width
+  }
+  
+  // Manual decoding of a type from data
+  init(from decoder: Decoder) throws {
+    let values = try decoder.container(keyedBy: CodingKeys.self)
+    name = try values.decode(String.self, forKey: .name)
+    if
+      let height = try values
+        .decodeIfPresent(Double.self, forKey: .height),
+      let width = try values
+        .decodeIfPresent(Double.self, forKey: .width) {
+      size = CGSize(width: width, height: height)
+    }
+  }
+  
+  // Manual encoding of data from a type
+  func encode(to encoder: Encoder) throws {
+    var container = encoder.container(keyedBy: CodingKeys.self)
+    try container.encode(name, forKey: .name)
+    guard let size else { return }
+    try container.encode(size.height, forKey: .height)
+    try container.encode(size.width, forKey: .width)
+  }
+}</code></pre>
+<p>You can use Codable to translate to and from dissimilar formats, but you pay a price. The code is hard to read and harder to maintain. Moreover, it is an all or nothing trade. You can see from how name is decoded above that you have lost the declarative style even for parts of your model that still have a direct correlation between formats.</p>
+<p>This is a maintainability cliff. As long as your Swift type closely resembles the data you need to decode and encode, complexity is low and maintainability is excellent. However, once the type and data diverge past a critical threshold, complexity rises and maintainability falls.</p>
+<h2>The “no drama” Codable model</h2>
+ <p>The difficulty in writing and maintaining manual Codable implementations leads many iOS developers to avoid them at all costs. Instead, they create model objects that closely mirror the structure of the data formats from which they are derived. I think of this as a “no drama” approach to codability. Here is a typical payload with its no-drama Codable type:</p>
+<pre><code>// JSON object
+{
+  "number": 5;
+  "title": "Three Little Pigs";
+  "titleColor": "FF0000";
+  "subtitle": null;
+  "subtitleColor": null;
+  "backgroundColor": "ffffff"
+}
+
+// No-drama model
+struct TextBoxModel: Codable {
+  let number: Int?
+  let title: String?
+  let titleColor: String?
+  let subtitle: String?
+  let subtitleColor: String?
+  let backgroundColor: String?
+}</code></pre>
+<p>Let’s consider this in detail. First, we see it is entirely optional. Any property may be nil and every combination of nil properties is valid. This is a sop to the optionality of common data formats (especially JSON) and ensures decoding will continue even if a property is unexpectedly missing.</p>
+<p>Second, we see a tendency toward stringly-typed values. In this case, there is no attempt to transform the decoded colors into UIColor or Color values. This ensures decoding will continue even if the decoded colors have invalid values.</p>
+<p>Third, the structure of the Swift type matches the structure of the data format. No attempt is made to restructure or rename the decoded values into more logical or practical configurations. Each property in the data matches one-to-one with a property of the same name in the Swift type. This avoids the complexity of manual decoding and encoding.</p>
+<p>All of this is typical of a no-drama Codable type and comes with a characteristic set of drawbacks.</p>
+<p>This model is anemic. It does few of the things you expect a model to do beyond memorializing the contents of a data object. If you have any business rules that regulate the consistency or validity of the model, they will have to be implemented in another part of your application. If default values need to be provided, they must be provided elsewhere. If values need to be normalized or denormalized to be useful to other layers of the application, it is not clear what should be responsible for doing that work, but the model has certainly abdicated responsibility.</p>
+<p>When you use anemic models, other parts of your application become more complex. Decisions best made in one part of the model are instead pushed to many parts of the controller and view layers.</p>
+<p>The complexity induced by no-drama Codable models gets worse when more parts of the application depend on the anemic model type. Whereas robust models pay dividends the more they are used and reused, anemic models spread complexity to every piece of code they touch. The harm of using a no-drama model in one feature is small; the harm of making your User model no-drama is enormous.</p>
+<p>No-drama models have problems beyond anemia. They tightly couple the shape of the model to the data format. If the data format changes, the model must make matching changes. The model is too attenuated to insulate the controller (or view model) and view layers from trivial changes in the data, so small changes in a data format can require shotgun surgery throughout the application.</p>
+<p>This leaves you with a problem. You want to stay on top of the Codable cliff to avoid ugly and error-prone manual encoding and decoding. You want to avoid anemic models and the complexity they bring. How can you satisfy both these constraints at once?</p>
+<p>I don’t have a single answer that works in all situations. There are a number of techniques that can help, though. The first is data transfer objects, or DTOs.</p>
+<h2>Codable data transfer objects</h2>
+<p>I'm slightly misusing a term; for these purposes, a DTO is an object used exclusively for transferring data outside an application. Instead of encoding your model objects directly, you first transform them into objects more suitable for encoding (decoding works the same way but in the opposite direction). Your DTO can be a no-drama Codable object, and transforming objects of one type into objects of another type is something at which Swift excels. You get the best of both worlds, benefiting from the powerful automated implementations of Codable as well as the rich transformations of Swift.</p>
+<p>The problem with using Codable types as DTOs is composition. You can write initializers, methods, or computed values to transform models to DTOs and back again, but you can't leverage that code to handle the parent model or child models. The complexity of maintaining separate DTOs and transforms for each model type spirals out of control almost immediately.</p>
+<p>What you need is a way of automating the transformation of data transfer objects into model objects and back again. And there is no better way to automate it than to leverage the transformation we already have: the Codable implementation itself.</p>
+<h3>Introducing Advanced Decodable</h3>
+<p>Advanced Decodable is a protocol that inherits from Decodable and folds a transformation into the Decodable implementation. You provide a Decodable DTO type and an initializer for creating the model from the DTO, and Advanced Decodable handles the rest. It composes seamlessly with other Decodable types because every Advanced Decodable type is by definition Decodable. Since the transformation takes place inside the Decodable implementation, there is no extra step and no spiral of complexity.</p>
+<p>Have a look at the definition of Advanced Decodable. It's as simple as it gets:</p>
+<pre><code>public protocol AdvancedDecodable: Decodable {
+  
+  associatedtype Decoded: Decodable
+  
+  init(from decoded: Decoded) throws
+}</code></pre>
+<p>Every Advanced Decodable type becomes Decodable, by definition. Each has an associated DTO type, Decoded. And each has an initializer for transforming from the DTO to the model object.</p>
+<p>Now see how you tie together the DTO, the transformation, and Decodable:</p>
+<pre><code>extension AdvancedDecodable {
+  
+  public init(from decoder: any Decoder) throws {
+    let container = try decoder.singleValueContainer()
+    let decoded = try container.decode(Decoded.self)
+    try self.init(from: decoded)
+  }
+}</code></pre>
+<p>Advanced Decodable uses a single manual Decodable implementation under the hood. Whenever Swift tries to decode an Advanced Decodable model from a decoder, it first creates a container holding a single value. Second, it attempts to decode the DTO from the container. Finally, it attempts to transform the DTO into the model object.</p>
+<p>It all takes place inside the Decodable implementation, so it is transparent to the user. All you have to do is provide the DTO type and the transforming initializer.</p>
+<p>The initializer you provide is where all the fun is. It's the perfect place to restructure a payload, provide defaults for missing values, and perform validity and consistency checks. If you come across an unrecoverably mangled or missing set of values, you can always throw. The error will propagate up through decoding as normal.</p>
+<h3>Introducing Advanced Encodable</h3>
+<p>Now that you see how Advanced Decodable works, Advanced Encodable writes itself. First, the definition:</p>
+<pre><code>public protocol AdvancedEncodable: Encodable {
+  
+  associatedtype Encoded: Encodable
+  
+  func encode() throws -> Encoded
+}</code></pre>
+<p>Advanced Encodable uses a method on the model object instead of an initializer on the DTO because a given DTO might be valid for a number of model objects, but a model object can only be encoded in one canonical way.</p>
+<p>The implementation:</p>
+<pre><code>extension AdvancedEncodable {
+    
+  public func encode(to encoder: any Encoder) throws {
+    var container = encoder.singleValueContainer()
+    let encoded = try encode()
+    try container.encode(encoded)
+  }
+}</code></pre>
+<p>Create the container, attempt to transform the model into a DTO, and attempt to encode the DTO into the container. Simple as that.</p>
+<h2>Helper types to banish manual Codable implementations</h2>
+<p>There are a few common payload configurations that resist encoding and decoding without manual Codable implementations. Three helper types can address these edge cases.</p>
+<h3>Maybe</h3>
+<p>A Maybe type is an enum that can represent either a value or an error. You can think of it as an Optional with context, or as a more-restrictive Result. You can see the implementation here:</p>
+<pre><code>public enum Maybe&lt;Value&gt; {
+  
+  case value(Value)
+  case error(any Error)
+}
+
+// Helper properties and methods omitted
+
+extension Maybe: Decodable where Value: Decodable {
+  
+  public init(from decoder: any Decoder) throws {
+    let container = try decoder.singleValueContainer()
+    do {
+      self = .value(try container.decode(Value.self))
+    } catch {
+      self = .error(error)
+    }
+  }
+}
+
+extension Maybe: Encodable where Value: Encodable {
+  
+  public func encode(to encoder: any Encoder) throws {
+    let value = try get()
+    var container = encoder.singleValueContainer()
+    try container.encode(value)
+  }
+}</code></pre>
+<p>The key ability of a Maybe is to handle errors while allowing encoding or decoding to continue. This is particularly useful when decoding a payload that doesn’t conform to a schema and may contain unexpected types. You can wrap the untrustworthy values in a Maybe and worry about them at a later stage of the Advanced Codable pipeline.</p>
+<p>In this example, the Maybe protects decoding against the unexpected "no value" element of the numbers array.</p>
+<pre><code>// JSON object
+{
+  "numbers": [3, 4, "no value", 6]
+}
+
+// Maybe usage
+struct NumberList: Codable {
+  var numbers: [Maybe&lt;Int&gt;]
+}</code></pre>
+<h3>Either</h3>
+<p>Sometimes a payload has known characteristics, but one of those characteristics is that a given property can be one of two or more types. This is where an Either type is useful. An Either is an enum that can contain a value of either A or B. Check out the implementation here:</p>
+<pre><code>public enum Either&lt;Left, Right&gt; {
+  
+  case left(Left)
+  case right(Right)
+  
+  public enum Error: Swift.Error {
+    
+    case neither
+    
+    public var description: String {
+      switch self {
+      case .neither:
+        "Could not find either \(Left.self) or \(Right.self)."
+      }
+    }
+  }    
+}  
+
+// Helper properties and methods omitted
+
+extension Either: Decodable where Left: Decodable, Right: Decodable {
+  
+  public init(from decoder: any Decoder) throws {
+    let container = try decoder.singleValueContainer()
+    let leftOutcome = Result { try container.decode(Left.self) }
+    if let left = try? leftOutcome.get() {
+      self = .left(left)
+    } else {
+      let rightOutcome = Result { try container.decode(Right.self) }
+      if let right = try? rightOutcome.get() {
+        self = .right(right)
+      } else {
+        throw Error.neither
+      }
+    }
+  }
+}
+
+extension Either: Encodable where Left: Encodable, Right: Encodable {
+  
+  public func encode(to encoder: any Encoder) throws {
+    var container = encoder.singleValueContainer()
+    switch self {
+    case .left(let left):
+      try container.encode(left)
+    case .right(let right):
+      try container.encode(right)
+    }
+  }
+}</code></pre>
+<p>An Either will store either A or B, and nothing stops you from making B an Either storing X or Y, and so forth. By nesting Eithers you can support a property being any number of distinct types.</p>
+<pre><code>// JSON object
+{
+  "values": [1, 2, "three", 4, false]
+}
+
+// Either usage
+struct NumberList: Codable {
+  var values: [Either&lt;Int, Either&lt;String, Bool&gt;&gt;]
+}</code></pre>
+<h3>Both</h3>
+<p>Both is a specialized tool that aids decoding in certain edge cases. A Both decodes both an A and a B from the same value in a payload. Take a look at the implementation:</p>
+<pre><code>public struct Both&lt;Left, Right&gt; {
+  
+  public var left: Left
+  public var right: Right
+}
+
+extension Both: Decodable where Left: Decodable, Right: Decodable {
+    
+  public init(from decoder: any Decoder) throws {
+    let container = try decoder.singleValueContainer()
+    self.left = try container.decode(Left.self)
+    self.right = try container.decode(Right.self)
+  }
+}</code></pre>
+<p>If a value can be either type A or type B, but it is not trivial to distinguish between the two, Both lets you decode values of both types and put off determining which type was the better choice. Both composes well with Maybe in a variety of configurations.</p>
+<p>In this example, the field layout must be decoded to discriminate between Diptych and Triptych types.</p>
+<pre><code>// JSON object
+{
+  "values": [
+    {
+      "layout": "diptych";
+      "panels": {
+        "left": "HI";
+        "right": "THERE!"
+      }
+    },
+    {
+      "layout": "triptych"
+      "panels": {
+        "left": "DEAR";
+        // center panel blank
+        "right": "JOHN"
+      }
+    }
+  ]
+}
+
+// Both usage
+struct Layouts: Decodable {
+  var values: [Both&lt;Diptych, Triptych&gt;]
+}</code></pre>
+<p>There is no easy way to make Both Encodable, since it would need to encode both left and right in the same single value container. Using traditional Codable techniques this would limit the utility of Both, but with Advanced Codable you can just use different types for Decoded and Encoded.</p>
+<h2>Conclusion</h2>
+<p>You have an alternative to manual Codable implementations and no-drama Codable types. Two protocols and a few helper types can cover almost all payload structures. The result is cleaner, easier to maintain code that keeps model concerns in the model, where they belong. It is entirely composable with your existing Codable code. Give it a try!</p>
+</main>
+</body>
+</html>

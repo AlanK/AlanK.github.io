@@ -63,6 +63,13 @@ h2 {
 	clear: both;
 }
 
+h3 {
+    margin-top: 1.8em;
+    margin-bottom: 0.6em;
+    color: #666;
+    clear: both;
+}
+
 img.hero {
 	width: 100%;
 	height: auto;
@@ -124,15 +131,6 @@ article {
 	margin-bottom: .5em;
 }
 
-article h3 {
-	background: linear-gradient(to bottom, rgba(0,0,0,.5), rgba(0,0,0,0));
-	padding: 1em;
-	
-	color: white;
-	font-weight: normal;
-	text-shadow: 0 .1em 0 black;
-}
-
 nav {
 	margin-bottom: 1em;
 }
@@ -147,11 +145,17 @@ p+p {
 
 pre {
     overflow: auto;
+    padding: 2em 0em;
 }
 
 code {
 	font-family: Consolas, Inconsolata, Menlo, monospace;
 	line-height: 0.9em;
+}
+
+pre code {
+    font-size: 0.75em;
+	line-height: 1.75em;
 }
 
 .context {
